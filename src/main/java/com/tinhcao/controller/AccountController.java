@@ -1,6 +1,7 @@
 package com.tinhcao.controller;
 
 import com.tinhcao.exception.AccountException;
+import com.tinhcao.json.AccountRequestModel;
 import com.tinhcao.model.Account;
 import com.tinhcao.service.AccountService;
 import org.slf4j.Logger;
@@ -72,21 +73,26 @@ public class AccountController {
     @ResponseBody
     @Produces(value = MediaType.APPLICATION_JSON_VALUE)
     @Consumes(value = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> createAccount(@RequestBody Account account, UriComponentsBuilder ucBuilder) {
-        logger.info("Creating User : {}", account);
+    public ResponseEntity<?> createAccount(@RequestBody AccountRequestModel accountRequestModel, UriComponentsBuilder ucBuilder) {
+        logger.info("Creating User : {}", accountRequestModel);
         try {
-            if (accountService.isAccountExist(account.getCustomerId())) {
-                logger.error("Unable to create Account with id {} already exist", account.getCustomerId());
+            if (accountService.isAccountExist(accountRequestModel.getCustomerId())) {
+                logger.error("Unable to create Account with id {} already exist", accountRequestModel.getCustomerId());
                 return new ResponseEntity<>(new AccountException("Unable to create. A Account with name " +
-                        account.getCustomerId() + " already exist."), HttpStatus.CONFLICT);
+                        accountRequestModel.getCustomerId() + " already exist."), HttpStatus.CONFLICT);
             }
-            accountService.createAccount(account);
+            Account addAccount = new Account.Builder()
+                    .customerId(accountRequestModel.getCustomerId())
+                    .customerName(accountRequestModel.getCustomerName())
+                    .amount(accountRequestModel.getAmount())
+                    .currency(accountRequestModel.getCurrency()).build();
+            accountService.createAccount(addAccount);
             HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(ucBuilder.path("/v1/accounts/account/{account_id}").buildAndExpand(account.getCustomerId()).toUri());
+            headers.setLocation(ucBuilder.path("/v1/accounts/accountRequestModel/{account_id}").buildAndExpand(accountRequestModel.getCustomerId()).toUri());
             return new ResponseEntity<>("Successful create Account ", HttpStatus.CREATED);
         } catch (IOException e) {
             return new ResponseEntity<>(new AccountException("Error when creating Account with id {} " +
-                    account.getCustomerId()), HttpStatus.INTERNAL_SERVER_ERROR);
+                    accountRequestModel.getCustomerId()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
@@ -95,18 +101,19 @@ public class AccountController {
     @ResponseBody
     @Produces(value = MediaType.APPLICATION_JSON_VALUE)
     @Consumes(value = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> updateAccount(@PathVariable("account_id") long account_id, @RequestBody Account account) {
+    public ResponseEntity<?> updateAccount(@PathVariable("account_id") long account_id, @RequestBody AccountRequestModel accountRequestModel) {
         logger.info("Updating Account with account_id {}", account_id);
         try {
-            Account currentAccount = accountService.getAccount(account_id);
-            if (currentAccount == null) {
+            if (accountService.getAccount(account_id) == null) {
                 logger.error("Unable to update. Account with id {} not found.", account_id);
                 return new ResponseEntity<>(new AccountException("Account with account_id " + account_id + " not found"), HttpStatus.NOT_FOUND);
             }
-            currentAccount.setCustomerName(account.getCustomerName());
-            currentAccount.setAmount(account.getAmount());
-            currentAccount.setCurrency(account.getCurrency());
-            account = accountService.updateAccount(account);
+            Account updateAccount = new Account.Builder()
+                    .customerId(account_id)
+                    .customerName(accountRequestModel.getCustomerName())
+                    .amount(accountRequestModel.getAmount())
+                    .currency(accountRequestModel.getCurrency()).build();
+            Account account = accountService.updateAccount(updateAccount);
             return new ResponseEntity<>(account, HttpStatus.OK);
         } catch (IOException e) {
             return new ResponseEntity<>(new AccountException("Error at updateAccount() method " +

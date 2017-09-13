@@ -8,46 +8,28 @@ public class Account {
     private double amount;
     private Currency currency;
 
-    public Account() {
-    }
+    private Account(Builder builder) {
+        customerId = builder.customerId;
+        customerName = builder.customerName;
+        amount = builder.amount;
+        currency = builder.currency;
 
-    public Account(long customerId, String customerName, double amount, Currency currency) {
-        this.customerId = customerId;
-        this.customerName = customerName;
-        this.amount = amount;
-        this.currency = currency;
     }
 
     public long getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(long customerId) {
-        this.customerId = customerId;
-    }
-
     public String getCustomerName() {
         return customerName;
-    }
-
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
     }
 
     public double getAmount() {
         return amount;
     }
 
-    public void setAmount(double amount) {
-        this.amount = amount;
-    }
-
     public Currency getCurrency() {
         return currency;
-    }
-
-    public void setCurrency(Currency currency) {
-        this.currency = currency;
     }
 
     @Override
@@ -58,5 +40,36 @@ public class Account {
                 ", amount=" + amount +
                 ", currency=" + currency +
                 '}';
+    }
+
+    public static class Builder {
+        private long customerId;
+        private String customerName;
+        private double amount;
+        private Currency currency;
+
+        public Builder customerId(long customerId) {
+            this.customerId = customerId;
+            return this;
+        }
+
+        public Builder customerName(String customerName) {
+            this.customerName = customerName;
+            return this;
+        }
+
+        public Builder amount(double amount) {
+            this.amount = amount;
+            return this;
+        }
+
+        public Builder currency(Currency currency) {
+            this.currency = currency;
+            return this;
+        }
+
+        public Account build() {
+            return new Account(this);
+        }
     }
 }

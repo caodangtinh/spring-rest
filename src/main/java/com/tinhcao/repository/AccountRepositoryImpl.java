@@ -1,6 +1,6 @@
 package com.tinhcao.repository;
 
-import com.tinhcao.json.JsonUtils;
+import com.tinhcao.utils.JsonUtils;
 import com.tinhcao.model.Account;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;

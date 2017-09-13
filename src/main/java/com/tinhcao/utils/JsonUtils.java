@@ -1,15 +1,17 @@
-package com.tinhcao.json;
+package com.tinhcao.utils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.tinhcao.json.AccountRequestModel;
 import com.tinhcao.model.Account;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component(value = "jsonUtils")
 public class JsonUtils {
@@ -23,10 +25,20 @@ public class JsonUtils {
      */
     public List<Account> getListAccountFromJsonFile() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        TypeReference<List<Account>> typeReference = new TypeReference<List<Account>>() {
+        TypeReference<List<AccountRequestModel>> typeReference = new TypeReference<List<AccountRequestModel>>() {
         };
         InputStream inputStream = new FileInputStream(ACCOUNT_JSON_FILE);
-        return mapper.readValue(inputStream, typeReference);
+        List<AccountRequestModel> accountRequestModels = mapper.readValue(inputStream, typeReference);
+        List<Account> accountList = accountRequestModels
+                .stream()
+                .map(model -> new Account.Builder()
+                        .customerId(model.getCustomerId())
+                        .customerName(model.getCustomerName())
+                        .amount(model.getAmount())
+                        .currency(model.getCurrency())
+                        .build()
+                ).collect(Collectors.toList());
+        return accountList;
     }
 
     /**
