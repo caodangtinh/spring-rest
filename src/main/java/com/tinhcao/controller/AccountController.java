@@ -74,7 +74,7 @@ public class AccountController {
     @Produces(value = MediaType.APPLICATION_JSON_VALUE)
     @Consumes(value = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createAccount(@RequestBody AccountRequestModel accountRequestModel, UriComponentsBuilder ucBuilder) {
-        logger.info("Creating User : {}", accountRequestModel);
+        logger.info("Creating Account : {}", accountRequestModel);
         try {
             if (accountService.isAccountExist(accountRequestModel.getCustomerId())) {
                 logger.error("Unable to create Account with id {} already exist", accountRequestModel.getCustomerId());
