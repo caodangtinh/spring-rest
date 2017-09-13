@@ -6,41 +6,111 @@ import com.tinhcao.service.AccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.Produces;
+import java.io.IOException;
 import java.util.List;
 
 @RestController(value = "accountController")
 @RequestMapping(value = "/v1/accounts/account")
 public class AccountController {
 
-    public static final Logger logger = LoggerFactory.getLogger(AccountController.class);
+    private static final Logger logger = LoggerFactory.getLogger(AccountController.class);
+
+
+    private AccountService accountService;
 
     @Autowired
-    private AccountService accountService;
+    public void setAccountService(AccountService accountService) {
+        this.accountService = accountService;
+    }
 
     @GetMapping(value = {""})
     @ResponseBody
-    public ResponseEntity<List<Account>> getListAccount() {
-        List<Account> accounts = accountService.listAllAccount();
-        if (accounts.isEmpty()) {
-            return new ResponseEntity(HttpStatus.NO_CONTENT);
-            // You many decide to return HttpStatus.NOT_FOUND
+    @Produces(value = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getListAccount() {
+        try {
+            List<Account> accounts = accountService.listAllAccount();
+            if (accounts.isEmpty()) {
+                return new ResponseEntity(HttpStatus.NO_CONTENT);
+                // You many decide to return HttpStatus.NOT_FOUND
+            }
+            return new ResponseEntity<>(accounts, HttpStatus.OK);
+        } catch (IOException e) {
+            return new ResponseEntity<>(new AccountException("Error at getListAccount() method " +
+                    e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(accounts, HttpStatus.OK);
+
     }
 
-    @GetMapping(value = {"/account_id"})
+    @GetMapping(value = {"{account_id}"})
     @ResponseBody
-    public ResponseEntity<?> getAccount(@PathVariable("id") long id) {
-        logger.info("Fetching Account with id {}", id);
-        Account account = accountService.getAccount(id);
-        if (account == null) {
-            logger.error("Account with id {} not found.", id);
-            return new ResponseEntity(new AccountException("User with id " + id + "not found"), HttpStatus.NOT_FOUND);
+    @Produces(value = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAccount(@PathVariable("account_id") long account_id) {
+        logger.info("Fetching Account with account_id {}", account_id);
+        try {
+            Account account = accountService.getAccount(account_id);
+            if (account == null) {
+                logger.error("Account with account_id {} not found.", account_id);
+                return new ResponseEntity<>(new AccountException("Account with account_id " + account_id + " not found"), HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>(account, HttpStatus.OK);
+        } catch (IOException e) {
+            return new ResponseEntity<>(new AccountException("Error at getAccount() method " +
+                    e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(account, HttpStatus.OK);
+    }
+
+    @PostMapping(value = {""})
+    @ResponseBody
+    @Produces(value = MediaType.APPLICATION_JSON_VALUE)
+    @Consumes(value = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> createAccount(@RequestBody Account account, UriComponentsBuilder ucBuilder) {
+        logger.info("Creating User : {}", account);
+        try {
+            if (accountService.isAccountExist(account.getCustomerId())) {
+                logger.error("Unable to create Account with id {} already exist", account.getCustomerId());
+                return new ResponseEntity<>(new AccountException("Unable to create. A Account with name " +
+                        account.getCustomerId() + " already exist."), HttpStatus.CONFLICT);
+            }
+            accountService.createAccount(account);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(ucBuilder.path("/v1/accounts/account/{account_id}").buildAndExpand(account.getCustomerId()).toUri());
+            return new ResponseEntity<>("Successful create Account ", HttpStatus.CREATED);
+        } catch (IOException e) {
+            return new ResponseEntity<>(new AccountException("Error when creating Account with id {} " +
+                    account.getCustomerId()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+    @PatchMapping(value = {"{account_id}"})
+    @ResponseBody
+    @Produces(value = MediaType.APPLICATION_JSON_VALUE)
+    @Consumes(value = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateAccount(@PathVariable("account_id") long account_id, @RequestBody Account account) {
+        logger.info("Updating Account with account_id {}", account_id);
+        try {
+            Account currentAccount = accountService.getAccount(account_id);
+            if (currentAccount == null) {
+                logger.error("Unable to update. Account with id {} not found.", account_id);
+                return new ResponseEntity<>(new AccountException("Account with account_id " + account_id + " not found"), HttpStatus.NOT_FOUND);
+            }
+            currentAccount.setCustomerName(account.getCustomerName());
+            currentAccount.setAmount(account.getAmount());
+            currentAccount.setCurrency(account.getCurrency());
+            account = accountService.updateAccount(account);
+            return new ResponseEntity<>(account, HttpStatus.OK);
+        } catch (IOException e) {
+            return new ResponseEntity<>(new AccountException("Error at updateAccount() method " +
+                    e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

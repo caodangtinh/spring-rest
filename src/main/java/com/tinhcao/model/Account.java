@@ -49,4 +49,14 @@ public class Account {
     public void setCurrency(Currency currency) {
         this.currency = currency;
     }
+
+    @Override
+    public String toString() {
+        return "Account{" +
+                "customerId=" + customerId +
+                ", customerName='" + customerName + '\'' +
+                ", amount=" + amount +
+                ", currency=" + currency +
+                '}';
+    }
 }

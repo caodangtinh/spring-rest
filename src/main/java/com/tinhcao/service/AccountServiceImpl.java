@@ -4,57 +4,43 @@ import com.tinhcao.model.Account;
 import com.tinhcao.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service(value = "accountService")
 public class AccountServiceImpl implements AccountService {
-    @Autowired
+
+
     private AccountRepository accountRepository;
 
-    /**
-     * Get Account detail by account id
-     *
-     * @param id account id
-     * @return succeed created account
-     */
+    @Autowired
+    public void setAccountRepository(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
+
     @Override
-    public Account getAccount(long id) {
+    public Account getAccount(long id) throws IOException {
         return accountRepository.getAccount(id);
     }
 
-    /**
-     * Update account by given id and Account
-     *
-     * @param id      Account ID
-     * @param account Account updated information
-     * @return succeed updated account
-     */
     @Override
-    public Account updateAccount(long id, Account account) {
-        return accountRepository.updateAccount(id, account);
+    public Account updateAccount(Account account) throws IOException {
+        return accountRepository.updateAccount(account);
     }
 
-    /**
-     * List all account
-     *
-     * @return List Account
-     */
     @Override
-    public List<Account> listAllAccount() {
+    public List<Account> listAllAccount() throws IOException {
         return accountRepository.listAllAccount();
     }
 
-    /**
-     * Create new account
-     *
-     * @param account   Account information to created
-     * @param ucBuilder UriComponentsBuilder
-     * @return
-     */
     @Override
-    public Account createAccount(Account account, UriComponentsBuilder ucBuilder) {
-        return accountRepository.createAccount(account, ucBuilder);
+    public Account createAccount(Account account) throws IOException {
+        return accountRepository.createAccount(account);
+    }
+
+    @Override
+    public boolean isAccountExist(long id) throws IOException {
+        return accountRepository.isAccountExist(id);
     }
 }
