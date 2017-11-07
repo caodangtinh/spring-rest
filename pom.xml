@@ -4,12 +4,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.tinhcao</groupId>
-    <artifactId>task1</artifactId>
+    <artifactId>spring-boot-rest</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>task1</name>
-    <description>Task 1</description>
+    <name>spring-boot-rest</name>
+    <description>spring-boot-rest</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
