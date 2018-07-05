@@ -40,7 +40,7 @@ public class AccountController {
         try {
             List<Account> accounts = accountService.listAllAccount();
             if (accounts.isEmpty()) {
-                return new ResponseEntity(HttpStatus.NO_CONTENT);
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
                 // You many decide to return HttpStatus.NOT_FOUND
             }
             return new ResponseEntity<>(accounts, HttpStatus.OK);
