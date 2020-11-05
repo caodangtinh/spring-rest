@@ -16,6 +16,7 @@ volumes: [
   node(label) {
     def myRepo = checkout scm
     def registry = "core.harbor.domain"
+    def registry_ip ="192.168.99.102"
     def shortGitCommit = sh(script: "printf \$(git rev-parse --short HEAD)",returnStdout: true)
     def image = "backbase/spring-rest"
     def version = "0.0.${BUILD_NUMBER}"
