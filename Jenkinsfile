@@ -55,16 +55,18 @@ volumes: [
     }
 
     container('helm') {
-      stage('Release to helm repository') {
-          sh """
-          cd k8s
-          helm repo add ${helm_repo} \
-          --username=admin \
-          --password=Harbor12345 ${helm_repo_url}
-
-          helm push ./${app}/ ${helm_repo}
-          """
-      }
+      withCredentials([file(credentialsId: 'harbor-crt', variable: 'FILE') ]) {
+            stage('Release to helm repository') {
+                sh """
+                echo '${registry_ip} ${registry}' >> /etc/hosts
+                cd k8s
+                helm repo add --ca-file $FILE ${helm_repo} \
+                --username=admin \
+                --password=Harbor12345 ${helm_repo_url}
+                helm push --ca-file $FILE ./${app}/ ${helm_repo}
+                """
+            }
+        }
     }
   }
 }
