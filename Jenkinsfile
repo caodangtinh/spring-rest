@@ -9,6 +9,7 @@ podTemplate(label: label, containers: [
     )
 ],
 volumes: [
+  persistentVolumeClaim(mountPath: '/root/.m2/repository', claimName: 'maven-local-repo', readOnly: false),
   hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
 ]) {
   node(label) {
@@ -30,7 +31,7 @@ volumes: [
             sh "mvn package"
         }
     }
-    
+
     container('docker') {
       stage('Build docker image') {
           sh """
