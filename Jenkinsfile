@@ -18,7 +18,7 @@ volumes: [
     def registry = "core.harbor.domain"
     def registry_ip ="192.168.99.102"
     def shortGitCommit = sh(script: "printf \$(git rev-parse --short HEAD)",returnStdout: true)
-    def image = "backbase/spring-rest"
+    def image = "backbase/registry"
     def version = "0.0.${BUILD_NUMBER}"
     def helm_repo_url = "https://core.harbor.domain/chartrepo/backbase"
     def helm_repo = "harbor"
