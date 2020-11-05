@@ -22,7 +22,7 @@ volumes: [
     def version = "0.0.${BUILD_NUMBER}"
     def helm_repo_url = "https://core.harbor.domain/chartrepo/backbase"
     def helm_repo = "harbor"
-    def app = "spring-rest"
+    def app = "registry"
     container('maven') {
         stage('Check Java') {
             sh "java -version"
