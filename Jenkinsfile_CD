@@ -1,0 +1,37 @@
+def label = "worker-${UUID.randomUUID().toString()}"
+
+podTemplate(label: label, containers: [
+  containerTemplate(name: 'helm', image: 'core.harbor.domain/library/helm-kubectl:3.2.3', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'jnlp', image: 'jenkinsci/jnlp-slave', args: '${computer.jnlpmac} ${computer.name}', envVars: [ 
+      envVar(key: 'JENKINS_URL', value: 'http://jenkins.jenkins.svc.cluster.local:8080')
+    ]
+    )
+],
+volumes: [
+  hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
+]) {
+  node(label) {
+    def registry = "core.harbor.domain"
+    def registry_ip ="192.168.99.102"
+    def image = "backbase/spring-rest"
+    def version = "0.0.${BUILD_NUMBER}"
+    def helm_repo_url = "https://core.harbor.domain/chartrepo/backbase"
+    def helm_repo = "harbor"
+    def app = "registry"
+    def namespace = "default"
+
+    container('helm') {
+      withCredentials([file(credentialsId: 'harbor-crt', variable: 'FILE') ]) {
+            stage('Deploy to kubernetes') {
+              sh """
+              helm repo add --ca-file $FILE ${helm_repo} \
+                --username=admin \
+                --password=Harbor12345 ${helm_repo_url}
+              helm repo update
+              helm install registry ${helm_repo}/${app} --timeout 300s --version=0.1.0 -n ${namespace}
+              """
+          }
+        }
+    }
+  }
+}
