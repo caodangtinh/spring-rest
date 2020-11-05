@@ -14,6 +14,9 @@ volumes: [
 ]) {
   node(label) {
     def myRepo = checkout scm
+    def registry = "core.harbor.domain"
+    def shortGitCommit = sh(script: "printf \$(git rev-parse --short HEAD)",returnStdout: true)
+    def image = "backbase/spring-rest"
     container('maven') {
         stage('check java') {
             sh "java -version"
@@ -35,7 +38,13 @@ volumes: [
     container('docker') {
       stage('Build docker image') {
           sh """
+            docker login ${registry} -u admin -p Harbor12345
             docker build -t spring-boot-rest:1.0 .
+            docker build -t ${registry}/${image}:${shortGitCommit} .
+            docker push ${registry}/${image}:${shortGitCommit}
+
+            docker tag ${registry}/${image}:${shortGitCommit} ${registry}/${image}:latest
+            docker push ${registry}/${image}:latest
             """
       }
     }
