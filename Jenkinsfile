@@ -24,11 +24,11 @@ volumes: [
     def helm_repo = "harbor"
     def app = "spring-rest"
     container('maven') {
-        stage('check java') {
+        stage('Check Java') {
             sh "java -version"
         }
 
-        stage('clean') {
+        stage('Cleanup') {
             sh "mvn clean"
         }
         
