@@ -36,15 +36,16 @@ volumes: [
              sh "mvn test"
         }
 
+        stage('SonarQube analysis') {
+          withSonarQubeEnv(credentialsId: 'sonarqube-token', installationName: 'SonarQube') {
+            sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.7.0.1746:sonar'
+          }
+        }
+
         stage('Packaging') {
             sh "mvn package"
         }
-    }
 
-    stage('SonarQube analysis') {
-      withSonarQubeEnv(credentialsId: 'sonarqube-token', installationName: 'SonarQube') {
-        sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.7.0.1746:sonar'
-      }
     }
 
     container('docker') {
