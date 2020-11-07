@@ -18,7 +18,7 @@ volumes: [
     def helm_repo_url = "https://core.harbor.domain/chartrepo/backbase"
     def helm_repo = "harbor"
     def app = "registry"
-    def namespace = "default"
+    def namespace = "ips"
 
     container('helm') {
       withCredentials([file(credentialsId: 'harbor-crt', variable: 'FILE') ]) {
@@ -28,7 +28,7 @@ volumes: [
                 --username=admin \
                 --password=Harbor12345 ${helm_repo_url}
               helm repo update
-              helm install registry ${helm_repo}/${app} --timeout 300s --version=0.1.0 -n ${namespace}
+              helm upgrade registry ${helm_repo}/${app} --timeout 300s --version=0.1.0 -n ${namespace}
               """
           }
         }
